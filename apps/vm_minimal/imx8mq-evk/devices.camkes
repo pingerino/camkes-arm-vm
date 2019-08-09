@@ -1,0 +1,63 @@
+/*
+ * Copyright 2018, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the terms of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(DATA61_BSD)
+ */
+
+#include <configurations/vm.h>
+
+#define VM_INITRD_MAX_SIZE 0x1900000 //25 MB
+#define VM_RAM_BASE 0xb0000000
+#define VM_RAM_SIZE 0x8000000
+#define VM_RAM_OFFSET 0
+#define VM_DTB_ADDR 0xb1000000  //(LINUX_RAM_BASE + 0x01000000)
+#define VM_INITRD_ADDR 0xaf700000 // DTB_ADDR - INITRD_MAX_SIZE
+
+assembly {
+	composition {}
+	configuration {
+
+        vm0.linux_address_config = {
+            "linux_ram_base" : VAR_STRINGIZE(VM_RAM_BASE),
+            "linux_ram_paddr_base" : VAR_STRINGIZE(VM_RAM_BASE),
+            "linux_ram_size" : VAR_STRINGIZE(VM_RAM_SIZE),
+            "linux_ram_offset" : VAR_STRINGIZE(VM_RAM_OFFSET),
+            "dtb_addr" : VAR_STRINGIZE(VM_DTB_ADDR),
+            "initrd_max_size" : VAR_STRINGIZE(VM_INITRD_MAX_SIZE),
+            "initrd_addr" : VAR_STRINGIZE(VM_INITRD_ADDR),
+        };
+
+        vm0.dtb = dtb([
+                        {"path": "/reserved-memory/rpmsg@b8000000"},
+                        {"path": "/gpio@30200000"},
+                        {"path": "/gpio@30210000"},
+                        {"path": "/gpio@30220000"},
+                        {"path": "/gpio@30230000"},
+                        {"path": "/gpio@30240000"},
+                        {"path": "/iomuxc@30330000"},
+                        {"path": "/ocotp-ctrl@30350000"},
+                        {"path": "/anatop@30360000"},
+                        {"path": "/ccm@30380000"},
+                        {"path": "/serial@30860000"},
+                        {"path": "/serial@30880000"},
+                        {"path": "/mu@30aa0000"},
+                        {"path": "/ethernet@30be0000"},
+                        {"path": "/phy@381f0040"},
+                        {"path": "/phy@382f0040"},
+                        {"path": "/phy@382f0040"},
+                        {"path": "/gpt@302e0000"},
+                        {"path": "/system-counter@3036a0000"},
+                       ]);
+
+        vm0.untyped_mmios = ["0x30340000:16", // Interrupt Controller Virtual CPU interface (Virtual Machine view)
+                             "0xb0000000:27"];
+
+        vm0.irqs = [27]; // INTERRUPT_VTIMER
+	}
+}
