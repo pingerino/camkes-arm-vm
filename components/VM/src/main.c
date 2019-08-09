@@ -867,10 +867,10 @@ int main_continued(void)
     }
 #endif /* CONFIG_ARM_SMMU */
 
-#if defined(CONFIG_PLAT_EXYNOS5) || defined(CONFIG_PLAT_TX2)
+//#if defined(CONFIG_PLAT_EXYNOS5) || defined(CONFIG_PLAT_TX2)
     /* HACK: See if we have a "RAM device" for 1-1 mappings */
     map_unity_ram(&vm);
-#endif /* CONFIG_PLAT_EXYNOS5410 || CONFIG_PLAT_TX2 */
+//#endif /* CONFIG_PLAT_EXYNOS5410 || CONFIG_PLAT_TX2 */
 
     /* Load system images */
     printf("Loading Linux: \'%s\' dtb: \'%s\'\n", linux_image_config.linux_name, linux_image_config.dtb_name);
