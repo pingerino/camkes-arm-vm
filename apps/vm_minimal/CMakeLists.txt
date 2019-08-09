@@ -74,7 +74,10 @@ elseif("${KernelARMPlatform}" STREQUAL "tx2")
 
     AddToFileServer("linux" "${CMAKE_SOURCE_DIR}/projects/camkes-vm-images/tx2/linux")
     AddToFileServer("linux-dtb" "${CMAKE_SOURCE_DIR}/projects/camkes-vm-images/tx2/linux-dtb")
-
+elseif("${KernelARMPlatform}" STREQUAL "imx8mq-evk")
+    set(cpp_flags "-DKERNELARMPLATFORM_IMX8MQ_EVK")
+    AddToFileServer("linux" "${CMAKE_SOURCE_DIR}/projects/camkes-vm-images/${KernelPlatform}/linux")
+    AddToFileServer("linux-dtb" "${CMAKE_SOURCE_DIR}/projects/camkes-vm-images/${KernelPlatform}/linux-dtb")
 endif()
 
 AddCamkesCPPFlag(cpp_flags CONFIG_VARS VmEmmc2NoDMA VmVUSB VmVchan Tk1DeviceFwd Tk1Insecure)
