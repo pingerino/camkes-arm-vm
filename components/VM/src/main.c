@@ -66,6 +66,7 @@ int VM_PRIO = 100;
 #define VM_BADGE            (1U << 0)
 #define VIRTIO_NET_BADGE    (1U << 1)
 #define SERIAL_BADGE        (1U << 2)
+#define BADGE_BITS          3
 #define VM_NAME             "Linux"
 
 #define IRQSERVER_PRIO      (VM_PRIO + 1)
@@ -587,7 +588,7 @@ static void irq_handler(void *data, ps_irq_acknowledge_fn_t acknowledge_fn, void
     token->acknowledge_fn = acknowledge_fn;
     token->ack_data = ack_data;
     int err;
-    err = vm_inject_IRQ(token->virq);
+    err = vm_inject_IRQ(token->virq, 0);
     assert(!err);
 }
 
@@ -645,7 +646,13 @@ static int route_irq(int irq_num, vm_t *vm, irq_server_t *irq_server)
         return -1;
     }
 
-    virq = vm_virq_new(vm, irq.irq.number, &do_irq_server_ack, token);
+    if (irq.irq.number >= 32) {
+        virq = vm_virq_new(vm, irq.irq.number, &do_irq_server_ack, token);
+    } else {
+        // todo needs to be all cores
+        assert(0);
+        virq = vm_virq_new_vcpu(vm, 0, irq.irq.number, &do_irq_server_ack, token);
+    }
     if (virq == NULL) {
         return -1;
     }
@@ -896,7 +903,10 @@ int main_continued(void)
         seL4_Word sender_badge;
 
         tag = seL4_Recv(_fault_endpoint, &sender_badge);
-        if (sender_badge == 0) {
+
+        /* grab the meaningful bits from the badge */
+        seL4_Word badge = sender_badge & MASK(BADGE_BITS);
+        if (badge == 0) {
             seL4_Word label;
             label = seL4_MessageInfo_get_label(tag);
             if (label == IRQ_MESSAGE_LABEL) {
@@ -905,16 +915,17 @@ int main_continued(void)
                 printf("Unknown label (%d) for IPC badge %d\n", label, sender_badge);
             }
 #ifdef FEATURE_VUSB
-        } else if (sender_badge == VUSB_NBADGE) {
+        } else if (badge == VUSB_NBADGE) {
             vusb_notify();
 #endif
-        } else if (sender_badge == VIRTIO_NET_BADGE) {
+        } else if (badge == VIRTIO_NET_BADGE) {
             virtio_net_notify(&vm);
-        } else if (sender_badge == SERIAL_BADGE) {
+        } else if (badge == SERIAL_BADGE) {
             handle_serial_console();
         } else {
-            assert(sender_badge == VM_BADGE);
-            err = vm_event(&vm, tag);
+
+            assert(badge == VM_BADGE);
+            err = vm_event(&vm, tag, sender_badge);
             if (err) {
                 /* Shutdown */
                 vm_stop(&vm);
