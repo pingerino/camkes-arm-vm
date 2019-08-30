@@ -31,7 +31,6 @@
 /*- set dtb = dtb_query.get('query') -*/
 
 /*- set untyped_dtb_mmio = [] -*/
-/*- set dtb_irqs_map = {} -*/
 /*- set dtb_irqs = [] -*/
 
 /*# Extract the relevant fields from the DTB (regs, interrupts, etc) #*/
@@ -59,11 +58,8 @@
     /*- set irq_notification_object = alloc_obj('irq_notification_obj', seL4_NotificationObject) -*/
     /*- set irq_notification = alloc_cap('irq_notification_obj', irq_notification_object, read=True) -*/
     /*- for irq in irq_set -*/
-        /*- if irq not in dtb_irqs_map -*/
-            /*- set irq_cap = alloc('%s_irq_%d' % (me.interface.name, i), seL4_IRQHandler, number=irq, notification=my_cnode[irq_notification]) -*/
+            /*- set irq_cap = alloc('%s_irq_%d' % (me.interface.name, irq), seL4_IRQHandler, number=irq, notification=my_cnode[irq_notification]) -*/
             /*- do dtb_irqs.append( (irq, irq_cap) ) -*/
-            /*- do dtb_irqs_map.update({irq: irq_cap}) -*/
-        /*- endif -*/
     /*- endfor -*/
 
 /*- endfor -*/
